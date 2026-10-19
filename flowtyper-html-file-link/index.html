@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="nothing">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlowType Pro — Typing, Focus & Streaks</title>
+<meta name="description" content="FlowType Pro: high-performance typing trainer with heatmap analytics, daily streaks, focus tools, rain noise, leaderboard and Pro licensing.">
+<meta name="theme-color" content="#050505">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root[data-theme="nothing"]{--bg:#050505;--surface:#0c0c0c;--surface2:#161616;--text:#f5f5f5;--muted:#9a9a9a;--accent:#ff0000;--accent2:#ffffff;--correct:#ffffff;--error:#ff2d2d;--border:#262626;--dim:#4d4d4d;--good:#22c55e}
+:root[data-theme="paper"]{--bg:#f2eee3;--surface:#fffdf6;--surface2:#f7f1de;--text:#1a1710;--muted:#716a5c;--accent:#d71921;--accent2:#1a1710;--correct:#15120c;--error:#d71921;--border:#ddd3bc;--dim:#b6ab93;--good:#159947}
+:root[data-theme="midnight"]{--bg:#060a1c;--surface:#0c1430;--surface2:#13204a;--text:#edf1ff;--muted:#93a2cf;--accent:#6d8dff;--accent2:#fff;--correct:#ffffff;--error:#ff5d7a;--border:#22336b;--dim:#465b96;--good:#2ee6a8}
+:root[data-theme="forest"]{--bg:#07120c;--surface:#0c2016;--surface2:#12301f;--text:#effff5;--muted:#8db79d;--accent:#2fd48c;--accent2:#fff;--correct:#ffffff;--error:#ff6b6b;--border:#1e4a32;--dim:#3d6850;--good:#4ade80}
+:root[data-theme="amber"]{--bg:#170e04;--surface:#241607;--surface2:#35200a;--text:#fff6e8;--muted:#c2a075;--accent:#ffb020;--accent2:#1a1003;--correct:#ffffff;--error:#ff5d5d;--border:#503311;--dim:#7a5a2d;--good:#a3e635}
+*{ -webkit-tap-highlight-color:transparent }
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:"Space Grotesk",system-ui,sans-serif;transition:background .35s,color .35s}
+.font-dot{font-family:"DotGothic16",sans-serif;letter-spacing:.07em}
+.mono{font-family:"JetBrains Mono",monospace}
+.surface{background:var(--surface);border:1px solid var(--border)}
+.surface2{background:var(--surface2)}
+.muted{color:var(--muted)}
+.accent{color:var(--accent)}
+.accent-bg{background:var(--accent);color:#fff}
+.dot-bg{background-image:radial-gradient(circle,color-mix(in srgb,var(--text) 14%,transparent) 1px,transparent 1.6px);background-size:18px 18px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:10px}
+.visually-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.custom-scroll::-webkit-scrollbar{width:6px;height:6px}.custom-scroll::-webkit-scrollbar-thumb{background:#444;border-radius:99px}
+.seg-active{background:var(--accent2)!important;color:var(--bg)!important;border-color:var(--accent2)!important}
+.pill-active{background:var(--accent)!important;color:#fff!important;border-color:var(--accent)!important}
+.tab-active{background:var(--text)!important;color:var(--bg)!important}
+@keyframes blink{0%,45%{opacity:1}50%,95%{opacity:0}}
+@keyframes rec{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.rec{animation:rec 1.2s infinite}.floaty{animation:floaty 5s ease-in-out infinite}
+.char{color:var(--dim);position:relative;white-space:pre}
+.char.correct{color:var(--correct)}
+.char.incorrect{color:var(--error);background:color-mix(in srgb,var(--error) 14%,transparent);border-radius:3px}
+.char.current{color:var(--dim)}
+.char.current::before{content:"";position:absolute;left:-2px;top:8%;height:84%;width:2.5px;border-radius:99px;background:var(--accent);animation:blink 1.05s infinite;box-shadow:0 0 12px var(--accent)}
+.word{display:inline-block;white-space:nowrap}
+.keycap{min-width:0;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:10px;padding:7px 1px 5px;font-family:"JetBrains Mono";text-transform:uppercase;transition:transform .15s}
+.keycap:hover{transform:translateY(-2px)}
+.calc-btn{height:48px;border-radius:14px;border:1px solid var(--border);background:var(--surface2);font-family:"JetBrains Mono";font-weight:700;transition:all .15s}
+.calc-btn:hover{filter:brightness(1.25)}.calc-btn:active{transform:scale(.95)}
+input,select,textarea{color:var(--text)}
+input::placeholder{color:var(--muted)}
+.field{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:10px 13px;outline:none;width:100%}
+.field:focus{border-color:var(--accent)}
+.stroke{-webkit-text-stroke:1px color-mix(in srgb,var(--text) 35%,transparent);color:transparent}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001s!important;transition-duration:.001s!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body class="min-h-screen overflow-x-hidden selection:bg-red-600 selection:text-white">
+<a href="#trainer" class="visually-hidden focus:!static focus:!w-auto focus:!h-auto accent-bg px-4 py-2 rounded-full m-2 inline-block">Skip to typing trainer</a>
+<div id="liveStats" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
+<div id="timerLive" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
+<div id="appStatus" class="visually-hidden" aria-live="polite"></div>
+
+<!-- HEADER -->
+<header class="sticky top-0 z-50 backdrop-blur-xl" style="background:color-mix(in srgb,var(--bg) 86%,transparent);border-bottom:1px solid var(--border)">
+ <div class="max-w-7xl mx-auto px-4 sm:px-6 h-[62px] flex items-center gap-3">
+  <a href="#trainer" class="flex items-center gap-2.5 shrink-0" aria-label="FlowType Pro home">
+    <span class="w-9 h-9 rounded-xl accent-bg flex items-center justify-center shadow-lg"><i data-lucide="keyboard" class="w-5 h-5"></i></span>
+    <span class="leading-none"><span class="font-dot text-[17px] tracking-widest">FLOWTYPE</span> <span class="mono text-[9px] accent-bg px-1.5 py-0.5 rounded-full align-middle">PRO</span><span class="block mono text-[8px] tracking-[0.24em] muted mt-1">TYPE • FOCUS • STREAK</span></span>
+  </a>
+  <nav class="hidden lg:flex items-center gap-1 ml-4 mono text-[10px] tracking-widest" aria-label="Primary">
+    <a class="px-3 py-2 rounded-full hover:opacity-70" href="#trainer">TRAINER</a><a class="px-3 py-2 rounded-full hover:opacity-70" href="#heatmap">HEATMAP</a><a class="px-3 py-2 rounded-full hover:opacity-70" href="#tools">TOOLS</a><a class="px-3 py-2 rounded-full hover:opacity-70" href="#leaderboard">RANK</a><a class="px-3 py-2 rounded-full hover:opacity-70" href="#pro">PRO</a>
+  </nav>
+  <div class="flex-1"></div>
+  <span id="streakPill" class="hidden sm:flex items-center gap-1.5 mono text-[10px] border rounded-full px-3 py-2" style="border-color:var(--border)"><i data-lucide="flame" class="w-3.5 h-3.5 accent"></i><b id="headerStreak">0</b> DAY STREAK</span>
+  <span id="proPill" class="hidden items-center gap-1 mono text-[10px] accent-bg rounded-full px-3 py-2 font-bold"><i data-lucide="crown" class="w-3.5 h-3.5"></i> PRO ACTIVE</span>
+  <div class="hidden md:flex items-center gap-1" role="group" aria-label="Theme">
+    <button class="w-6 h-6 rounded-full border-2 border-white/40" style="background:#050505" onclick="setTheme('nothing')" aria-label="Nothing dark theme"></button>
+    <button class="w-6 h-6 rounded-full border-2 border-black/20" style="background:#f2eee3" onclick="setTheme('paper')" aria-label="Paper light theme"></button>
+    <button class="w-6 h-6 rounded-full" style="background:#6d8dff" onclick="setTheme('midnight')" aria-label="Midnight theme"></button>
+    <button class="w-6 h-6 rounded-full" style="background:#2fd48c" onclick="setTheme('forest')" aria-label="Forest theme"></button>
+    <button class="w-6 h-6 rounded-full" style="background:#ffb020" onclick="setTheme('amber')" aria-label="Amber theme"></button>
+  </div>
+  <button id="installBtn" class="hidden mono text-[10px] tracking-widest border rounded-full px-3 py-2" style="border-color:var(--border)"><i data-lucide="download" class="w-3.5 h-3.5 inline"></i> INSTALL</button>
+  <a href="#pro" class="accent-bg mono text-[10px] tracking-widest px-4 py-2.5 rounded-full font-bold flex items-center gap-1.5"><i data-lucide="zap" class="w-3.5 h-3.5"></i> GO PRO</a>
+ </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 pb-24">
+ <!-- HERO STRIP -->
+ <section class="relative pt-8 pb-5 overflow-hidden">
+  <div class="absolute inset-0 dot-bg opacity-50 pointer-events-none" aria-hidden="true"></div>
+  <div class="relative flex flex-wrap items-end justify-between gap-5">
+   <div>
+    <p class="mono text-[10px] tracking-[0.25em] accent flex items-center gap-2"><span class="w-7 h-px accent-bg inline-block"></span> v2.0 • HEATMAP + STREAKS + GLOBAL RANK</p>
+    <h1 class="font-dot text-[52px] sm:text-[82px] leading-[0.88] mt-3">TYPE IN<br><span class="accent">FLOW</span><span class="stroke">_STATE</span></h1>
+    <p class="muted mt-3 max-w-xl text-[15px] leading-relaxed">A high-performance typing trainer for students & professionals. Incremental rendering, throttled live stats, local-first data — no account needed to start.</p>
+   </div>
+   <div class="flex gap-2.5">
+    <div class="surface rounded-2xl px-4 py-3 text-center min-w-[96px]"><p class="mono text-[8px] tracking-widest muted">PERSONAL BEST</p><p class="font-dot text-3xl leading-none mt-1.5"><span id="bestWpm">0</span><span class="text-xs muted"> WPM</span></p></div>
+    <div class="surface rounded-2xl px-4 py-3 text-center min-w-[96px]"><p class="mono text-[8px] tracking-widest muted">TESTS DONE</p><p class="font-dot text-3xl leading-none mt-1.5" id="totalTests">0</p></div>
+    <div class="accent-bg rounded-2xl px-4 py-3 text-center min-w-[96px]"><p class="mono text-[8px] tracking-widest text-white/70">TODAY</p><p class="font-dot text-3xl leading-none mt-1.5" id="todayTests">0</p><p class="mono text-[8px]">SESSIONS</p></div>
+   </div>
+  </div>
+ </section>
+
+ <!-- TRAINER -->
+ <section id="trainer" class="surface rounded-[26px] overflow-hidden scroll-mt-24" aria-label="Typing trainer">
+  <div class="flex flex-wrap items-center gap-2 px-3 sm:px-5 py-3.5" style="border-bottom:1px solid var(--border)">
+   <div class="flex surface2 border rounded-full p-1" style="border-color:var(--border)" role="group" aria-label="Test mode">
+     <button data-testmode="time" onclick="setTestMode('time')" class="seg-btn seg-active mono text-[10px] tracking-widest px-3.5 py-2 rounded-full border border-transparent flex gap-1.5 items-center"><i data-lucide="timer" class="w-3.5 h-3.5"></i> TIME</button>
+     <button data-testmode="words" onclick="setTestMode('words')" class="seg-btn mono text-[10px] tracking-widest px-3.5 py-2 rounded-full border border-transparent flex gap-1.5 items-center"><i data-lucide="whole-word" class="w-3.5 h-3.5"></i> WORDS</button>
+   </div>
+   <div id="durationPills" class="flex gap-1" role="group" aria-label="Duration or word count"></div>
+   <span class="hidden sm:block w-px h-6 mx-1" style="background:var(--border)"></span>
+   <div id="sourcePills" class="flex gap-1 flex-wrap" role="group" aria-label="Prompt type">
+     <button data-source="words" onclick="setSource('words')" class="src-btn pill-active mono text-[10px] px-3 py-2 rounded-full border" style="border-color:var(--border)">COMMON</button>
+     <button data-source="quotes" onclick="setSource('quotes')" class="src-btn mono text-[10px] px-3 py-2 rounded-full border" style="border-color:var(--border)">QUOTES</button>
+     <button data-source="code" onclick="setSource('code')" class="src-btn mono text-[10px] px-3 py-2 rounded-full border" style="border-color:var(--border)">&lt;/&gt; CODE</button>
+     <button data-source="office" onclick="setSource('office')" class="src-btn mono text-[10px] px-3 py-2 rounded-full border" style="border-color:var(--border)">STUDY / OFFICE</button>
+   </div>
+   <div class="flex-1"></div>
+   <button onclick="retrySame()" class="w-10 h-10 rounded-full border flex items-center justify-center hover:opacity-70" style="border-color:var(--border)" aria-label="Restart same prompt" title="Restart same prompt"><i data-lucide="rotate-ccw" class="w-4 h-4"></i></button>
+   <button onclick="newTest(true)" class="accent-bg mono text-[10px] tracking-widest font-bold px-4 py-2.5 rounded-full flex items-center gap-1.5"><i data-lucide="shuffle" class="w-3.5 h-3.5"></i> NEW TEST</button>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-4 divide-x" style="border-bottom:1px solid var(--border);--tw-divide-opacity:1" role="status" aria-label="Live typing statistics">
+   <div class="py-3.5 text-center"><p class="font-dot text-[30px] sm:text-[38px] leading-none" id="statWpm">0</p><p class="mono text-[8px] tracking-[0.22em] muted mt-1">WPM</p></div>
+   <div class="py-3.5 text-center"><p class="font-dot text-[30px] sm:text-[38px] leading-none" id="statAcc">100<span class="text-sm muted">%</span></p><p class="mono text-[8px] tracking-[0.22em] muted mt-1">ACCURACY</p></div>
+   <div class="py-3.5 text-center"><p class="font-dot text-[30px] sm:text-[38px] leading-none" id="statRaw">0</p><p class="mono text-[8px] tracking-[0.22em] muted mt-1">RAW WPM</p></div>
+   <div class="py-3.5 text-center"><p class="font-dot text-[30px] sm:text-[38px] leading-none accent" id="statTime">30</p><p class="mono text-[8px] tracking-[0.22em] muted mt-1" id="statTimeLabel">SECONDS LEFT</p></div>
+  </div>
+  <div class="h-1.5 surface2" role="progressbar" aria-label="Test progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressBarWrap"><div id="testProgress" class="h-full accent-bg transition-all duration-300" style="width:0%"></div></div>
+
+  <!-- Prompt -->
+  <div id="promptOuter" class="relative px-4 sm:px-8 py-7 sm:py-9 cursor-text">
+   <div id="promptScroll" class="custom-scroll overflow-y-auto max-h-[196px] pr-1">
+     <div id="promptText" class="mono text-[20px] sm:text-[25px] leading-[1.95] tracking-[0.01em] select-none" aria-hidden="true"></div>
+   </div>
+   <label class="visually-hidden" for="typerInput">Typing input. Type the text shown above. Press Control Enter for a new test.</label>
+   <textarea id="typerInput" class="absolute inset-0 w-full h-full opacity-0 resize-none cursor-text" style="caret-color:transparent;color:transparent;background:transparent" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="promptHint"></textarea>
+   <div id="focusOverlay" class="absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity">
+     <span class="mono text-[11px] tracking-[0.18em] px-5 py-3 rounded-full surface shadow-2xl flex items-center gap-2 floaty"><i data-lucide="mouse-pointer-click" class="w-4 h-4 accent"></i> CLICK HERE — THEN START TYPING</span>
+   </div>
+  </div>
+  <div id="promptHint" class="flex flex-wrap gap-x-4 gap-y-1 px-4 sm:px-6 pb-4 mono text-[9px] tracking-widest muted">
+    <span><b style="color:var(--text)">CTRL + ENTER</b> NEW TEST</span><span><b style="color:var(--text)">ESC</b> STOP / BLUR</span><span>PASTE IS BLOCKED FOR FAIR SCORES</span><span class="ml-auto hidden sm:flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full" style="background:var(--good)"></span> INCREMENTAL RENDER • STATS THROTTLED @100MS</span>
+  </div>
+
+  <!-- Results -->
+  <div id="resultsPanel" class="hidden px-4 sm:px-6 pb-6">
+   <div class="rounded-[22px] p-5 sm:p-6" style="background:var(--text);color:var(--bg)">
+    <div class="flex flex-wrap gap-5 items-start">
+     <div><p class="mono text-[9px] tracking-[0.22em] opacity-60">YOUR RESULT <span class="rec inline-block w-2 h-2 rounded-full accent-bg align-middle"></span></p>
+       <p class="font-dot text-[76px] leading-[0.85] mt-2"><span id="resWpm">0</span><span class="text-[22px] opacity-50"> WPM</span></p>
+       <p id="resVerdict" class="font-bold mt-1">Great run!</p></div>
+     <div class="grid grid-cols-3 gap-2 text-center flex-1 min-w-[230px]">
+       <div class="border border-black/15 rounded-xl py-3 px-1"><p class="font-dot text-2xl" id="resAcc">0%</p><p class="mono text-[8px] tracking-widest opacity-60">ACCURACY</p></div>
+       <div class="border border-black/15 rounded-xl py-3 px-1"><p class="font-dot text-2xl" id="resRaw">0</p><p class="mono text-[8px] tracking-widest opacity-60">RAW WPM</p></div>
+       <div class="border border-black/15 rounded-xl py-3 px-1"><p class="font-dot text-2xl" id="resCons">0%</p><p class="mono text-[8px] tracking-widest opacity-60">CONSISTENCY</p></div>
+       <div class="border border-black/15 rounded-xl py-3 px-1"><p class="font-dot text-2xl" id="resChars">0/0</p><p class="mono text-[8px] tracking-widest opacity-60">CORRECT / ERRORS</p></div>
+       <div class="border border-black/15 rounded-xl py-3 px-1"><p class="font-dot text-2xl" id="resTime">0s</p><p class="mono text-[8px] tracking-widest opacity-60">TIME</p></div>
+       <div class="border border-black/15 rounded-xl py-3 px-1"><p class="font-dot text-2xl accent" id="resStreak">🔥0</p><p class="mono text-[8px] tracking-widest opacity-60">DAY STREAK</p></div>
+     </div>
+     <canvas id="wpmChart" width="620" height="150" class="w-full lg:w-[340px] h-[110px] rounded-xl bg-black/5" aria-label="Words per minute over time chart"></canvas>
+    </div>
+    <div class="flex flex-wrap gap-2 mt-5 items-center">
+      <input id="playerName" class="rounded-full px-4 py-2.5 text-sm mono bg-black/5 border border-black/15 outline-none w-[190px]" style="color:#111" placeholder="Your name for ranking" aria-label="Name for leaderboard">
+      <button onclick="saveCurrentScore()" id="saveScoreBtn" class="bg-black text-white mono text-[10px] tracking-widest px-4 py-2.5 rounded-full font-bold flex items-center gap-1.5"><i data-lucide="trophy" class="w-3.5 h-3.5"></i> SAVE TO LEADERBOARD</button>
+      <button onclick="copyResult()" class="border border-black/20 mono text-[10px] tracking-widest px-4 py-2.5 rounded-full font-bold flex items-center gap-1.5"><i data-lucide="copy" class="w-3.5 h-3.5"></i> COPY RESULT</button>
+      <span class="flex-1"></span>
+      <button onclick="retrySame();focusTyper()" class="border border-black/20 mono text-[10px] tracking-widest px-4 py-2.5 rounded-full font-bold">↺ RETRY</button>
+      <button onclick="newTest(true);focusTyper()" class="accent-bg mono text-[10px] tracking-widest px-5 py-2.5 rounded-full font-bold">NEXT TEST →</button>
+    </div>
+   </div>
+  </div>
+ </section>
+
+ <!-- HEATMAP + STREAK -->
+ <section class="grid lg:grid-cols-12 gap-4 mt-4">
+  <div id="heatmap" class="lg:col-span-8 surface rounded-[24px] p-5 sm:p-6 scroll-mt-24">
+   <div class="flex flex-wrap items-center justify-between gap-2">
+     <div><p class="mono text-[9px] tracking-[0.22em] accent">🎮 GAMIFICATION • NEW</p><h2 class="font-dot text-[30px] leading-none mt-1.5 flex items-center gap-2">ERROR HEATMAP <i data-lucide="grid-3x3" class="w-5 h-5 accent"></i></h2></div>
+     <div class="flex items-center gap-2"><span id="heatSummary" class="mono text-[10px] muted">No keystrokes yet — finish a test.</span><button onclick="resetHeatmap()" class="border mono text-[9px] tracking-widest px-3 py-2 rounded-full hover:opacity-70" style="border-color:var(--border)">RESET DATA</button></div>
+   </div>
+   <div id="heatmapKeyboard" class="mt-5 space-y-1.5" role="img" aria-label="Keyboard error heatmap. Redder keys have more errors."></div>
+   <div class="flex items-center gap-2 mt-3 mono text-[8px] tracking-widest muted"><span>ACCURATE</span><span class="flex-1 h-2 rounded-full" style="background:linear-gradient(90deg,hsl(140,70%,38%),hsl(55,85%,45%),hsl(0,80%,48%))"></span><span>ERROR-PRONE</span><span class="ml-2 hidden sm:inline">NUMBER = ERROR % • NEEDS 5+ PRESSES TO COLOUR</span></div>
+   <div class="grid sm:grid-cols-2 gap-4 mt-5">
+     <div class="surface2 rounded-2xl p-4"><p class="mono text-[9px] tracking-[0.2em] muted flex items-center gap-1.5"><i data-lucide="hand" class="w-3.5 h-3.5 accent"></i> FINGER ZONES <span class="accent-bg text-[8px] px-1.5 py-0.5 rounded-full">PRO ANALYTICS</span></p><div id="fingerBars" class="space-y-2 mt-3"></div></div>
+     <div class="surface2 rounded-2xl p-4"><p class="mono text-[9px] tracking-[0.2em] muted flex items-center gap-1.5"><i data-lucide="link-2" class="w-3.5 h-3.5 accent"></i> PROBLEM KEY PAIRS (BIGRAMS)</p><div id="pairList" class="flex flex-wrap gap-1.5 mt-3"></div><p class="text-xs muted leading-relaxed mt-3">Drill the red pairs slowly at 60% speed for 2 minutes — accuracy first, speed follows.</p></div>
+   </div>
+  </div>
+
+  <div class="lg:col-span-4 surface rounded-[24px] p-5 sm:p-6">
+   <p class="mono text-[9px] tracking-[0.22em] accent">🔥 DAILY STREAK SYSTEM • NEW</p>
+   <div class="flex items-end gap-3 mt-3"><p class="font-dot text-[72px] leading-[0.8]"><span id="streakDays">0</span></p><p class="mono text-[10px] muted pb-1">DAY<br>STREAK <span class="text-xl">🔥</span></p><div class="ml-auto text-right"><p class="mono text-[8px] tracking-widest muted">LONGEST</p><p class="font-dot text-2xl" id="longestStreak">0</p></div></div>
+   <div id="streakCalendar" class="grid grid-cols-7 gap-1 mt-4" role="img" aria-label="Last 35 days activity calendar"></div>
+   <div class="flex justify-between mono text-[8px] muted mt-1.5"><span>35 DAYS AGO</span><span>TODAY →</span></div>
+   <div class="grid grid-cols-3 gap-1.5 mt-4 text-center mono">
+     <div class="surface2 rounded-xl py-2.5"><p class="font-bold text-sm" id="streakToday">0</p><p class="text-[8px] muted tracking-widest">TODAY</p></div>
+     <div class="surface2 rounded-xl py-2.5"><p class="font-bold text-sm" id="activeDays">0</p><p class="text-[8px] muted tracking-widest">ACTIVE DAYS</p></div>
+     <div class="surface2 rounded-xl py-2.5"><p class="font-bold text-sm" id="focusMins">0m</p><p class="text-[8px] muted tracking-widest">FOCUS TOTAL</p></div>
+   </div>
+   <p class="mono text-[9px] tracking-[0.2em] muted mt-5 mb-2">ACHIEVEMENTS</p>
+   <div id="badgeRow" class="flex flex-wrap gap-1.5"></div>
+   <button onclick="markTodayDemo()" class="w-full mt-4 border border-dashed mono text-[9px] tracking-widest py-2.5 rounded-full muted hover:opacity-70" style="border-color:var(--border)" title="For previewing the streak UI only">+ LOG A FOCUS MINUTE (COUNTS TODAY)</button>
+  </div>
+ </section>
+
+ <!-- TOOLS -->
+ <section id="tools" class="grid md:grid-cols-3 gap-4 mt-4 scroll-mt-24">
+  <!-- Clock + Focus -->
+  <div class="surface rounded-[24px] p-5">
+   <p class="mono text-[9px] tracking-[0.22em] muted flex items-center gap-2"><i data-lucide="clock" class="w-4 h-4 accent"></i> ANALOG CLOCK • LOCAL, NO ASSETS</p>
+   <div class="flex items-center gap-4 mt-4">
+     <svg id="clockSvg" viewBox="0 0 200 200" class="w-[138px] h-[138px] shrink-0" role="img" aria-label="Analog clock showing current time">
+       <circle cx="100" cy="100" r="96" fill="var(--surface2)" stroke="var(--border)" stroke-width="2"/><g id="clockTicks"></g>
+       <line id="hourHand" x1="100" y1="100" x2="100" y2="58" stroke="var(--text)" stroke-width="7" stroke-linecap="round"/>
+       <line id="minHand" x1="100" y1="100" x2="100" y2="36" stroke="var(--text)" stroke-width="4" stroke-linecap="round" opacity="0.75"/>
+       <line id="secHand" x1="100" y1="112" x2="100" y2="30" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+       <circle cx="100" cy="100" r="7" fill="var(--accent)"/>
+     </svg>
+     <div><p class="font-dot text-[30px] leading-none" id="digitalClock">--:--:--</p><p class="mono text-[9px] muted tracking-widest mt-1.5" id="digitalDate">—</p>
+       <div class="h-px my-3" style="background:var(--border)"></div>
+       <p class="mono text-[8px] tracking-widest muted">FOCUS COUNTDOWN</p><p class="font-dot text-[26px] leading-none mt-1" id="focusDisplay">25:00</p></div>
+   </div>
+   <div class="flex flex-wrap gap-1.5 mt-4">
+     <button onclick="setFocusPreset(25)" class="surface2 border mono text-[10px] px-3 py-2 rounded-full hover:opacity-70" style="border-color:var(--border)">25m POMODORO</button>
+     <button onclick="setFocusPreset(50)" class="surface2 border mono text-[10px] px-3 py-2 rounded-full hover:opacity-70" style="border-color:var(--border)">50m DEEP WORK</button>
+     <button onclick="setFocusPreset(5)" class="surface2 border mono text-[10px] px-3 py-2 rounded-full hover:opacity-70" style="border-color:var(--border)">5m BREAK</button>
+   </div>
+   <div class="flex gap-1.5 mt-2">
+     <button id="focusBtn" onclick="toggleFocus()" class="accent-bg flex-1 rounded-full py-2.5 mono text-[10px] tracking-widest font-bold flex items-center justify-center gap-1.5"><i data-lucide="play" class="w-3.5 h-3.5"></i> START FOCUS</button>
+     <button onclick="resetFocus()" class="border rounded-full px-4 py-2.5 mono text-[10px] hover:opacity-70" style="border-color:var(--border)" aria-label="Reset focus timer"><i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i></button>
+   </div>
+  </div>
+
+  <!-- Rain -->
+  <div class="surface rounded-[24px] p-5">
+   <p class="mono text-[9px] tracking-[0.22em] muted flex items-center gap-2"><i data-lucide="cloud-rain" class="w-4 h-4 accent"></i> RAIN NOISE • WEB AUDIO API, 0 FILES</p>
+   <canvas id="rainCanvas" width="520" height="110" class="w-full h-[86px] rounded-2xl surface2 mt-4" aria-hidden="true"></canvas>
+   <div class="grid grid-cols-4 gap-1 mt-3" role="group" aria-label="Noise type">
+     <button data-noise="rain" onclick="setNoise('rain')" class="noise-btn pill-active border mono text-[9px] py-2 rounded-full" style="border-color:var(--border)">🌧 RAIN</button>
+     <button data-noise="storm" onclick="setNoise('storm')" class="noise-btn border mono text-[9px] py-2 rounded-full" style="border-color:var(--border)">⛈ STORM</button>
+     <button data-noise="white" onclick="setNoise('white')" class="noise-btn border mono text-[9px] py-2 rounded-full" style="border-color:var(--border)">∼ WHITE</button>
+     <button data-noise="cafe" onclick="setNoise('cafe')" class="noise-btn border mono text-[9px] py-2 rounded-full" style="border-color:var(--border)">☕ CAFÉ</button>
+   </div>
+   <label class="flex items-center gap-2.5 mt-4 mono text-[10px] muted"><i data-lucide="volume-2" class="w-4 h-4 shrink-0"></i><span class="visually-hidden">Rain volume</span><input id="rainVol" type="range" min="0" max="100" value="55" class="flex-1 accent-red-600"><span id="rainVolLabel">55%</span></label>
+   <button id="rainToggle" onclick="toggleNoise()" class="w-full mt-3 rounded-full py-3 mono text-[10px] tracking-widest font-bold flex items-center justify-center gap-2" style="background:var(--text);color:var(--bg)"><i data-lucide="play" class="w-4 h-4"></i> PLAY RAIN</button>
+   <p id="rainStatus" class="mono text-[9px] muted text-center mt-2">Generated live with filtered noise buffers — works offline, no MP3.</p>
+  </div>
+
+  <!-- Calculator -->
+  <div id="calc" tabindex="0" class="surface rounded-[24px] p-5 outline-none" aria-label="Calculator. Click to enable keyboard shortcuts: numbers, plus minus multiply divide, Enter equals, Backspace delete, Escape clear.">
+   <p class="mono text-[9px] tracking-[0.22em] muted flex items-center gap-2"><i data-lucide="calculator" class="w-4 h-4 accent"></i> CALCULATOR <span id="calcKbdStatus" class="ml-auto text-[8px] px-2 py-1 rounded-full border" style="border-color:var(--border)">⌨ CLICK TO ARM KEYS</span></p>
+   <div class="surface2 rounded-2xl px-4 py-3 mt-4 text-right overflow-hidden">
+     <p id="calcExpr" class="mono text-[11px] muted truncate h-4">&nbsp;</p>
+     <p id="calcDisplay" class="mono font-extrabold text-[32px] leading-none truncate mt-1" aria-live="polite">0</p>
+   </div>
+   <div class="grid grid-cols-4 gap-1.5 mt-3" id="calcGrid"></div>
+   <p class="mono text-[8px] muted tracking-widest mt-3">⌨ 0–9 &nbsp;+ − * /&nbsp; ENTER = &nbsp;•&nbsp; ⌫ BACKSPACE &nbsp;•&nbsp; ESC CLEAR</p>
+  </div>
+ </section>
+
+ <!-- LEADERBOARD -->
+ <section id="leaderboard" class="surface rounded-[24px] p-5 sm:p-6 mt-4 scroll-mt-24">
+  <div class="flex flex-wrap items-center gap-3 justify-between">
+   <div><p class="mono text-[9px] tracking-[0.22em] accent">☁️ BACKEND & SYNC ROADMAP — DEMO READY</p><h2 class="font-dot text-[30px] leading-none mt-1.5 flex gap-2 items-center">LEADERBOARD <i data-lucide="trophy" class="w-5 h-5 accent"></i></h2></div>
+   <div class="flex items-center gap-2">
+     <span id="syncStatus" class="mono text-[9px] px-3 py-2 rounded-full border flex items-center gap-1.5" style="border-color:var(--border)"><span class="w-2 h-2 rounded-full bg-yellow-400"></span> OFFLINE • LOCAL-FIRST</span>
+     <div class="flex surface2 border rounded-full p-1" style="border-color:var(--border)" role="tablist" aria-label="Leaderboard scope">
+       <button id="lbLocalBtn" onclick="setLeaderboard('local')" class="tab-active mono text-[10px] px-3.5 py-2 rounded-full font-bold" role="tab" aria-selected="true">LOCAL</button>
+       <button id="lbGlobalBtn" onclick="setLeaderboard('global')" class="mono text-[10px] px-3.5 py-2 rounded-full" role="tab" aria-selected="false">🌍 GLOBAL (DEMO)</button>
+     </div>
+     <button onclick="syncGlobal()" class="w-10 h-10 rounded-full border flex items-center justify-center hover:opacity-70" style="border-color:var(--border)" aria-label="Sync global leaderboard"><i data-lucide="refresh-cw" class="w-4 h-4" id="syncIcon"></i></button>
+   </div>
+  </div>
+  <div id="leaderboardList" class="mt-5 space-y-1.5"></div>
+  <details class="mt-5 surface2 rounded-2xl p-4">
+    <summary class="cursor-pointer mono text-[10px] tracking-widest font-bold flex items-center gap-2"><i data-lucide="database" class="w-4 h-4 accent"></i> CONNECT A REAL BACKEND (SUPABASE / FIREBASE) — DEVELOPER SETUP</summary>
+    <div class="grid sm:grid-cols-2 gap-2 mt-4">
+      <label class="mono text-[9px] muted">SUPABASE PROJECT URL<input id="sbUrl" class="field mt-1 mono text-xs" placeholder="https://xxxx.supabase.co"></label>
+      <label class="mono text-[9px] muted">SUPABASE ANON KEY (PUBLIC)<input id="sbKey" class="field mt-1 mono text-xs" placeholder="eyJhbGciOi…"></label>
+    </div>
+    <button onclick="saveBackendConfig()" class="accent-bg mono text-[10px] tracking-widest font-bold px-4 py-2.5 rounded-full mt-3">SAVE CONFIG (STORED LOCALLY)</button>
+    <span id="sbStatus" class="mono text-[10px] muted ml-2">Demo mode until configured. Never paste a service-role / secret key in a browser.</span>
+    <pre class="mono text-[10.5px] leading-relaxed surface rounded-xl p-3.5 mt-3 overflow-x-auto custom-scroll">-- 1) Run in Supabase SQL editor:
+create table public.scores (
+  id uuid default gen_random_uuid() primary key,
+  name text not null, wpm int not null, accuracy numeric not null,
+  mode text, created_at timestamptz default now()
+);
+alter table public.scores enable row level security;
+create policy "read scores" on public.scores for select using (true);
+create policy "insert scores" on public.scores for insert with check (wpm between 1 and 300);
+-- 2) Save URL + anon key above, then ship a build that POSTs to /rest/v1/scores.
+-- Firebase alternative: Firestore collection "scores" with the same fields + security rules.</pre>
+  </details>
+ </section>
+
+ <!-- PRO / PRICING -->
+ <section id="pro" class="mt-4 scroll-mt-24">
+  <div class="flex flex-wrap items-end justify-between gap-3 mb-3.5">
+    <div><p class="mono text-[9px] tracking-[0.22em] accent">💳 AUTOMATED PAYMENTS • RAZORPAY / STRIPE → AUTO LICENSE</p><h2 class="font-dot text-[38px] leading-none mt-1.5">GO <span class="accent">PRO_</span></h2></div>
+    <div class="flex surface border rounded-full p-1" role="group" aria-label="Payment provider">
+      <button data-provider="razorpay" onclick="setProvider('razorpay')" class="prov-btn tab-active mono text-[10px] font-bold px-4 py-2 rounded-full">RAZORPAY 🇮🇳</button>
+      <button data-provider="stripe" onclick="setProvider('stripe')" class="prov-btn mono text-[10px] px-4 py-2 rounded-full">STRIPE 🌍</button>
+    </div>
+  </div>
+  <div id="licenseBanner" class="hidden accent-bg rounded-2xl px-4 py-3.5 mb-3 flex flex-wrap items-center gap-2 mono text-xs"><i data-lucide="badge-check" class="w-5 h-5"></i><span id="licenseBannerText">Pro active</span><button onclick="revokeLicense()" class="ml-auto bg-black/25 rounded-full px-3 py-1.5 text-[10px]">DEACTIVATE (DEMO)</button></div>
+  <div class="grid md:grid-cols-3 gap-3">
+   <div class="surface rounded-[24px] p-6 flex flex-col"><p class="mono text-[10px] tracking-widest muted">FREE</p><p class="font-dot text-5xl mt-3">₹0</p><ul class="text-sm muted space-y-2 mt-4 flex-1 leading-relaxed"><li>✓ Unlimited typing tests</li><li>✓ Local leaderboard & streaks</li><li>✓ Rain noise, clock, calculator</li><li>— Finger-zone analytics locked view</li><li>— Global rank verification</li></ul><button class="border rounded-full py-3 mono text-[10px] tracking-widest font-bold mt-5 opacity-60" style="border-color:var(--border)" disabled>CURRENT PLAN</button></div>
+   <div class="rounded-[24px] p-6 flex flex-col relative overflow-hidden" style="background:var(--text);color:var(--bg)"><span class="absolute right-4 top-4 accent-bg mono text-[8px] px-2 py-1 rounded-full font-bold">POPULAR</span><p class="mono text-[10px] tracking-widest opacity-60">PRO MONTHLY</p><p class="font-dot text-5xl mt-3">₹199<span class="text-base opacity-50">/mo</span></p><ul class="text-sm space-y-2 mt-4 flex-1 leading-relaxed opacity-80"><li>✓ Full heatmap + finger zones + bigrams</li><li>✓ Verified global leaderboard badge</li><li>✓ All premium themes</li><li>✓ Priority streak freeze (1/mo)</li><li>✓ Cancel anytime</li></ul><button onclick="openCheckout('pro')" class="accent-bg rounded-full py-3 mono text-[10px] tracking-widest font-bold mt-5 flex items-center justify-center gap-1.5"><i data-lucide="zap" class="w-3.5 h-3.5"></i> UPGRADE — ₹199</button></div>
+   <div class="surface rounded-[24px] p-6 flex flex-col"><p class="mono text-[10px] tracking-widest muted">LIFETIME</p><p class="font-dot text-5xl mt-3">₹1,499</p><ul class="text-sm muted space-y-2 mt-4 flex-1 leading-relaxed"><li>✓ Everything in Pro, forever</li><li>✓ Founding-member badge 👑</li><li>✓ All future updates included</li><li>✓ One payment — UPI / card</li></ul><button onclick="openCheckout('lifetime')" class="rounded-full py-3 mono text-[10px] tracking-widest font-bold mt-5" style="background:var(--text);color:var(--bg)">BUY LIFETIME — ₹1,499</button></div>
+  </div>
+  <div class="surface rounded-[24px] p-5 mt-3 flex flex-col sm:flex-row gap-3 sm:items-center">
+    <div class="flex items-center gap-2.5"><span class="w-10 h-10 surface2 rounded-xl flex items-center justify-center"><i data-lucide="key-round" class="w-5 h-5 accent"></i></span><div><p class="font-bold text-sm">Already have a license key?</p><p class="mono text-[9px] muted">KEYS ARE AUTO-ISSUED BY WEBHOOK AFTER PAYMENT</p></div></div>
+    <div class="flex flex-1 gap-1.5"><input id="licenseInput" class="field mono text-sm uppercase" placeholder="FTPRO-XXXX-XXXX-XXXX" aria-label="License key"><button onclick="activateFromInput()" class="accent-bg shrink-0 rounded-[14px] px-5 mono text-[10px] tracking-widest font-bold">ACTIVATE</button></div>
+  </div>
+ </section>
+
+ <!-- STATUS / IMPLEMENTED -->
+ <section class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-6">
+  <div class="surface rounded-2xl p-4"><i data-lucide="gauge" class="w-5 h-5 accent"></i><p class="font-bold text-sm mt-2.5">Performance</p><p class="text-xs muted leading-relaxed mt-1">Incremental char rendering (only changed spans repaint), statsFor() throttled via rAF @100ms, heatmap saved on finish — not per keystroke.</p></div>
+  <div class="surface rounded-2xl p-4"><i data-lucide="accessibility" class="w-5 h-5 accent"></i><p class="font-bold text-sm mt-2.5">Accessibility</p><p class="text-xs muted leading-relaxed mt-1">Skip-link, aria-live stats & timer announcements, focus-visible rings, modal focus trap + Esc, calculator keyboard map, reduced-motion support.</p></div>
+  <div class="surface rounded-2xl p-4"><i data-lucide="wifi-off" class="w-5 h-5 accent"></i><p class="font-bold text-sm mt-2.5">Local & PWA-ready</p><p class="text-xs muted leading-relaxed mt-1" id="pwaStatus">Clock, rain (Web Audio), icons & manifest are generated on-device. Manifest: generating…</p></div>
+  <div class="surface rounded-2xl p-4"><i data-lucide="shield-check" class="w-5 h-5 accent"></i><p class="font-bold text-sm mt-2.5">Payments (Demo)</p><p class="text-xs muted leading-relaxed mt-1">Checkout simulates Razorpay/Stripe → signed webhook → auto-issued checksum license key. Swap in live keys + a webhook endpoint to go production.</p></div>
+ </section>
+
+ <footer class="mt-10 pt-6 flex flex-col sm:flex-row gap-3 items-center justify-between" style="border-top:1px solid var(--border)">
+   <p class="font-dot tracking-widest text-sm">FLOWTYPE <span class="accent">PRO ●</span> <span class="muted mono text-[9px] tracking-[0.2em] ml-1">TYPE • FOCUS • STREAK • RANK</span></p>
+   <details class="mono text-[10px] muted"><summary class="cursor-pointer font-bold" style="color:var(--text)">⌨ ALL KEYBOARD SHORTCUTS</summary><p class="mt-2 leading-loose">Trainer: Ctrl+Enter new test • Esc stop<br>Calculator (when armed): 0–9, + − * /, Enter =, Backspace, Esc<br>Modals: Tab cycles inside • Esc closes • focus returns to trigger</p></details>
+   <p class="mono text-[9px] muted tracking-widest">LOCAL-FIRST • YOUR DATA STAYS IN localStorage</p>
+ </footer>
+</main>
+
+<!-- CHECKOUT MODAL -->
+<div id="checkoutModal" class="hidden fixed inset-0 z-[120] items-end sm:items-center justify-center p-3" style="background:rgba(0,0,0,.72);backdrop-filter:blur(6px)" role="dialog" aria-modal="true" aria-labelledby="checkoutTitle">
+ <div class="surface w-full max-w-[520px] rounded-[26px] p-5 sm:p-7 max-h-[92vh] overflow-y-auto custom-scroll" style="background:var(--surface)">
+  <div class="flex items-start justify-between gap-3">
+    <div><p class="mono text-[9px] tracking-[0.22em] accent" id="checkoutProvider">RAZORPAY SECURE CHECKOUT (DEMO)</p><h3 id="checkoutTitle" class="font-dot text-[32px] leading-none mt-2">FLOWTYPE PRO</h3><p class="muted text-sm mt-1" id="checkoutPlan">Pro Monthly — ₹199/mo</p></div>
+    <button onclick="closeCheckout()" class="w-10 h-10 shrink-0 rounded-full border flex items-center justify-center hover:opacity-70" style="border-color:var(--border)" aria-label="Close checkout"><i data-lucide="x" class="w-4 h-4"></i></button>
+  </div>
+  <div id="checkoutForm" class="space-y-2.5 mt-5">
+    <label class="block mono text-[9px] muted tracking-widest">FULL NAME<input id="payName" class="field mt-1 normal-case tracking-normal mono text-sm" placeholder="Alex Rahman" autocomplete="name"></label>
+    <label class="block mono text-[9px] muted tracking-widest">EMAIL (LICENSE IS SENT HERE)<input id="payEmail" type="email" class="field mt-1 normal-case tracking-normal mono text-sm" placeholder="you@email.com" autocomplete="email"></label>
+    <label class="block mono text-[9px] muted tracking-widest"><span id="payDetailLabel">UPI ID</span><input id="payDetail" class="field mt-1 normal-case tracking-normal mono text-sm" placeholder="yourname@okhdfcbank"></label>
+    <button onclick="fillTestPayment()" class="mono text-[10px] underline muted">↳ fill test payment details</button>
+    <div class="flex items-center justify-between surface2 rounded-xl px-4 py-3 mono text-sm"><span class="muted text-[10px] tracking-widest">TOTAL DUE TODAY</span><b id="checkoutAmount" class="text-lg">₹199</b></div>
+    <button id="payBtn" onclick="payNow()" class="accent-bg w-full rounded-full py-3.5 mono text-[11px] tracking-widest font-bold flex items-center justify-center gap-2"><i data-lucide="lock" class="w-4 h-4"></i> PAY SECURELY</button>
+    <p class="mono text-[8.5px] muted text-center leading-relaxed">⚠ DEMO CHECKOUT — no real money moves and no card data leaves your browser.<br>Production: create the order server-side, verify the webhook signature, then issue the key.</p>
+  </div>
+  <pre id="webhookLog" class="hidden mono text-[10.5px] leading-[1.9] rounded-2xl p-4 mt-4 overflow-x-auto custom-scroll" style="background:#030303;color:#4ade80;border:1px solid #1e3a26" aria-live="polite"></pre>
+  <div id="checkoutSuccess" class="hidden mt-4 text-center">
+    <p class="text-[44px] leading-none">🎉</p><p class="font-dot text-2xl mt-2">LICENSE ISSUED!</p>
+    <p class="muted text-xs mt-1">Auto-generated by the (simulated) webhook & emailed to you. Pro is already activated on this device:</p>
+    <div class="flex gap-1.5 mt-3"><code id="issuedKey" class="flex-1 surface2 border rounded-xl px-3 py-3 mono font-bold tracking-widest text-sm" style="border-color:var(--border)">FTPRO-····</code><button onclick="copyText(document.getElementById('issuedKey').textContent,'License key copied')" class="accent-bg rounded-xl px-4 mono text-[10px] font-bold">COPY</button></div>
+    <button onclick="closeCheckout()" class="w-full mt-4 rounded-full py-3 mono text-[10px] tracking-widest font-bold" style="background:var(--text);color:var(--bg)">START USING PRO →</button>
+  </div>
+ </div>
+</div>
+
+<div id="toasts" class="fixed bottom-4 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-5 z-[140] space-y-2 w-[calc(100%-2rem)] sm:w-[350px]" aria-live="polite"></div>
+
+<script>
+// ============================== HELPERS / STORAGE ==============================
+const $=id=>document.getElementById(id);
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function todayKey(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function copyText(t,msg){navigator.clipboard?.writeText(t).then(()=>toast(msg||'Copied','copy')).catch(()=>toast('Copy failed','copy',1))}
+function toast(msg,icon='check-circle-2',bad=false){const el=document.createElement('div');el.className='flex items-center gap-2.5 rounded-2xl px-4 py-3 shadow-2xl mono text-[11px]';el.style.background=bad?'#dc2626':'var(--text)';el.style.color=bad?'#fff':'var(--bg)';el.innerHTML='<i data-lucide="'+icon+'" class="w-4 h-4 shrink-0"></i><span>'+escapeHtml(msg)+'</span>';$('toasts').appendChild(el);lucide.createIcons();setTimeout(()=>{el.style.opacity='0';el.style.transition='all .4s';setTimeout(()=>el.remove(),400)},3200)}
+function beep(f=880,n=1){try{const Ctx=window.AudioContext||window.webkitAudioContext;const ctx=beep._c||(beep._c=new Ctx());for(let i=0;i<n;i++){const o=ctx.createOscillator(),g=ctx.createGain();o.frequency.value=f+i*160;o.connect(g);g.connect(ctx.destination);const t=ctx.currentTime+i*0.18;g.gain.setValueAtTime(.15,t);g.gain.exponentialRampToValueAtTime(.001,t+.18);o.start(t);o.stop(t+.2)}}catch(e){}}
+
+// ============================== THEME ==============================
+function setTheme(name){document.documentElement.dataset.theme=name;store.set('ft_theme',name);const colors={nothing:'#050505',paper:'#f2eee3',midnight:'#060a1c',forest:'#07120c',amber:'#170e04'};document.querySelector('meta[name=theme-color]').content=colors[name]||'#050505';toast('Theme: '+name,'palette')}
+setThemeSilent();
+function setThemeSilent(){const t=store.get('ft_theme','nothing');document.documentElement.dataset.theme=t}
+
+// ============================== PROMPT SOURCES ==============================
+const COMMON="the of and to in is you that it he was for on are as with his they at be this have from or one had by word but not what all were we when your can said there use each which she do how their if will up other about out many then them these so some her would make like him into time has look two more write go see number no way could people my than first water been call who oil its now find long down day did get come made may part over new sound take only little work know place year live me back give most very after thing our just name good sentence man think say great where help through much before line right too mean old any same tell boy follow came want show also around form three small set put end does another well large must big even such because turn here why ask went men read need land different home us move try kind hand picture again change off play spell air away animal house point page letter mother answer found study still learn should world high every near add food between own below country plant last school father keep tree never start city earth eye light thought head under story saw left few while along might close something seem next hard open example begin life always those both paper together got group often run".split(" ");
+const QUOTES=["The quick brown fox jumps over the lazy dog near the river bank.","Success is not final and failure is not fatal, it is the courage to continue that counts.","In the middle of every difficulty lies a wonderful opportunity waiting to be discovered.","The best way to predict the future is to create it with the work you do today.","It always seems impossible until it is done, so keep moving forward one step at a time.","Quality is not an act, it is a habit built quietly through daily practice and patience.","Whether you think you can or you think you cannot, you are usually right in the end.","Your time is limited, so do not waste it living someone else's version of your life.","Strive not to be a success, but rather to be of value to the people around you.","The only true wisdom is in knowing that you know nothing at all about most things.","Innovation distinguishes between a leader and a follower in every generation of builders.","What we achieve inwardly will change outer reality more than anything else ever could."];
+const CODE=["const total = items.reduce((sum, item) => sum + item.price, 0);","function greet(name) { return `Hello, ${name}! Welcome back.`; }","if (user.isLoggedIn && user.role === 'admin') { showDashboard(); }","const names = users.filter(u => u.active).map(u => u.name.toUpperCase());","for (let i = 0; i < scores.length; i++) { console.log(i, scores[i]); }","document.querySelector('#app').addEventListener('click', handleClick);","async function loadData() { const res = await fetch(url); return res.json(); }","let result = (a + b) * c / d - e % 3; // check the order of operations"];
+const OFFICE=["Please find attached the revised quarterly report for your review and approval before Friday.","Thank you for attending today's meeting. The action items and deadlines are summarised below for everyone.","Dear Professor, I am writing to request an extension for the assignment due to unforeseen circumstances this week.","The research shows that regular practice over several weeks leads to significantly better long term retention of new material.","Our team successfully delivered the project ahead of schedule while staying comfortably within the approved budget for this quarter.","To improve your academic writing, plan each paragraph around a single clear idea supported by reliable evidence and examples.","Kindly confirm your availability for an interview next Tuesday between ten in the morning and two in the afternoon.","Effective communication in the workplace depends on listening carefully, writing clearly, and following up promptly on shared commitments."];
+
+// ============================== TYPING ENGINE ==============================
+let testMode='time', durationVal=30, source='words';
+let promptText='', typedPrev='', startTime=null, finished=false, timerInt=null, samples=[], lastSampleSec=-1, lastResult=null, scoreSaved=false;
+let charSpans=[], statRafPending=false, lastStatAt=0, lastLiveAt=0;
+let keyStats=store.get('ft_keystats',{}), pairStats=store.get('ft_pairs',{});
+
+function rnd(a){return a[Math.floor(Math.random()*a.length)]}
+function generatePrompt(){
+  let wordsNeeded = testMode==='words' ? durationVal : 190;
+  if(source==='words'){ const w=[]; let last=''; for(let i=0;i<wordsNeeded;i++){ let x; do{x=rnd(COMMON)}while(x===last); w.push(x); last=x; } return w.join(' '); }
+  const pool = source==='quotes'?QUOTES: source==='code'?CODE:OFFICE;
+  let text=''; const used=new Set();
+  while(text.split(/\s+/).filter(Boolean).length < wordsNeeded){
+    let s=rnd(pool); if(used.has(s) && used.size<pool.length) continue; used.add(s); text+=(text?' ':'')+s;
+    if(testMode==='words' && source!=='words') break; // one quote/snippet makes a natural test
+  }
+  if(testMode==='words' && source!=='words'){ const parts=text.split(/\s+/); if(parts.length>durationVal*2.2) text=parts.slice(0,Math.max(durationVal,20)).join(' '); }
+  return text.trim();
+}
+// Incremental render: full build once, then only changed chars update.
+function renderPrompt(){
+  const box=$('promptText'); box.innerHTML=''; charSpans=[];
+  let idx=0; const tokens=promptText.split(' ');
+  tokens.forEach((word,wi)=>{
+    const w=document.createElement('span'); w.className='word';
+    for(const ch of word){ const s=document.createElement('span'); s.className='char'; s.textContent=ch; w.appendChild(s); charSpans.push(s); idx++; }
+    box.appendChild(w);
+    if(wi<tokens.length-1){ const sp=document.createElement('span'); sp.className='char'; sp.textContent=' '; sp.style.display='inline-block'; sp.style.width='0.55ch'; box.appendChild(sp); charSpans.push(sp); idx++; }
+  });
+  updateCharRange(0,0,'');
+}
+function updateCharRange(from,to,newTyped){
+  // clear classes for indices >= newTyped.length that were previously styled, and style changed region only
+  for(let i=from;i<Math.max(to,newTyped.length);i++){
+    const s=charSpans[i]; if(!s) continue;
+    s.classList.remove('current');
+    if(i<newTyped.length){ s.classList.toggle('correct',newTyped[i]===promptText[i]); s.classList.toggle('incorrect',newTyped[i]!==promptText[i]); }
+    else { s.classList.remove('correct','incorrect'); }
+  }
+  // remove stale current elsewhere cheaply via stored ref
+  if(updateCharRange._cur && updateCharRange._cur!==charSpans[newTyped.length]) updateCharRange._cur.classList.remove('current');
+  const cur=charSpans[newTyped.length]; if(cur){ cur.classList.add('current'); updateCharRange._cur=cur;
+    const sc=$('promptScroll'); const y=cur.offsetTop; if(y>sc.scrollTop+120||y<sc.scrollTop) sc.scrollTop=Math.max(0,y-52); }
+}
+// Pure, cheap stats. Returns object; DOM writes are throttled by caller.
+function statsFor(typed,elapsedSec){
+  let correct=0; for(let i=0;i<typed.length;i++) if(typed[i]===promptText[i]) correct++;
+  const mins=Math.max(elapsedSec,0.5)/60;
+  const wpm=elapsedSec>0.4? Math.round((correct/5)/mins):0;
+  const raw=elapsedSec>0.4? Math.round((typed.length/5)/mins):0;
+  const acc=typed.length? Math.round(correct/typed.length*100):100;
+  return {correct,errors:typed.length-correct,wpm,raw,acc,typedLen:typed.length};
+}
+function elapsed(){ return startTime? (Date.now()-startTime)/1000:0 }
+function scheduleStats(){
+  if(statRafPending) return; statRafPending=true;
+  requestAnimationFrame(()=>{ statRafPending=false; const now=performance.now(); if(now-lastStatAt<100){ setTimeout(scheduleStats,105); return; } lastStatAt=now; paintStats(); });
+}
+function paintStats(){
+  const typed=$('typerInput').value, el=elapsed(), st=statsFor(typed,el);
+  $('statWpm').textContent=st.wpm; $('statAcc').innerHTML=st.acc+'<span class="text-sm muted">%</span>'; $('statRaw').textContent=st.raw;
+  let pct=0;
+  if(testMode==='time'){ const left=Math.max(0,Math.ceil(durationVal-el)); $('statTime').textContent=startTime?left:durationVal; pct=startTime?Math.min(100,el/durationVal*100):0; }
+  else { $('statTime').textContent=Math.floor(el); pct=typed.length/promptText.length*100; }
+  $('testProgress').style.width=pct+'%'; $('progressBarWrap').setAttribute('aria-valuenow',Math.round(pct));
+  const now=Date.now(); if(startTime && now-lastLiveAt>2000){ lastLiveAt=now; $('liveStats').textContent=st.wpm+' words per minute, '+st.acc+' percent accuracy.'; }
+  return st;
+}
+function recordKeystrokes(prev,next){
+  // only newly-added chars count (backspaces never penalise twice)
+  for(let i=prev.length;i<next.length;i++){
+    const exp=promptText[i]; if(exp===undefined) continue;
+    const key=exp===' '?'space':exp.toLowerCase();
+    if(!keyStats[key]) keyStats[key]={h:0,e:0};
+    if(next[i]===exp) keyStats[key].h++; else { keyStats[key].e++; if(i>0){ const pair=(promptText[i-1]===' '?'␣':promptText[i-1].toLowerCase())+(exp===' '?'␣':exp.toLowerCase()); if(!pairStats[pair]) pairStats[pair]={h:0,e:0}; pairStats[pair].e++; } }
+    if(i>0 && next[i]===exp){ const pair=(promptText[i-1]===' '?'␣':promptText[i-1].toLowerCase())+(exp===' '?'␣':exp.toLowerCase()); if(!pairStats[pair]) pairStats[pair]={h:0,e:0}; pairStats[pair].h++; }
+  }
+}
+$('typerInput').addEventListener('input',e=>{
+  if(finished){ e.target.value=typedPrev; return; }
+  let val=e.target.value;
+  if(val.length>promptText.length){ val=val.slice(0,promptText.length); e.target.value=val; }
+  if(!startTime && val.length>0) startTimerLoop();
+  if(val.startsWith(typedPrev)) recordKeystrokes(typedPrev,val); // only pure appends count toward heatmap
+  let from=0; while(from<Math.min(typedPrev.length,val.length) && typedPrev[from]===val[from]) from++;
+  const oldLen=typedPrev.length; typedPrev=val;
+  updateCharRange(from,Math.max(oldLen,val.length),val);
+  scheduleStats();
+  if(val.length>=promptText.length && (testMode==='words'||source!=='words')) finishTest();
+  else if(val.length>=promptText.length) finishTest();
+});
+$('typerInput').addEventListener('paste',e=>{e.preventDefault();toast('Paste blocked — type it out for a fair score','shield-check',1)});
+$('typerInput').addEventListener('focus',()=>{ $('focusOverlay').style.opacity='0'; $('appStatus').textContent='Typing area focused.'; });
+$('typerInput').addEventListener('blur',()=>{ if(!finished) $('focusOverlay').style.opacity='1'; });
+$('promptOuter').addEventListener('click',()=>focusTyper());
+function focusTyper(){ $('typerInput').focus({preventScroll:true}); }
+function startTimerLoop(){
+  startTime=Date.now(); samples=[]; lastSampleSec=-1;
+  clearInterval(timerInt);
+  timerInt=setInterval(()=>{
+    const el=elapsed(), sec=Math.floor(el);
+    if(sec!==lastSampleSec && sec>0){ lastSampleSec=sec; samples.push(statsFor($('typerInput').value,el).wpm); }
+    paintStats();
+    if(testMode==='time' && el>=durationVal) finishTest();
+  },200);
+}
+function stopTimer(){ clearInterval(timerInt); timerInt=null; }
+function finishTest(){
+  if(finished||!startTime) return; finished=true; stopTimer(); scoreSaved=false;
+  const el=Math.max(elapsed(),1), typed=$('typerInput').value, st=statsFor(typed,el);
+  if(testMode==='time'&&samples.length===0) samples=[st.wpm];
+  const mean=samples.length?samples.reduce((a,b)=>a+b,0)/samples.length:st.wpm;
+  const sd=samples.length?Math.sqrt(samples.reduce((a,b)=>a+(b-mean)**2,0)/samples.length):0;
+  const consistency=mean>0?Math.max(0,Math.min(100,Math.round(100-(sd/mean)*100))):100;
+  lastResult={...st,consistency,time:Math.round(el),mode:testMode+' '+durationVal+(testMode==='time'?'s':'w')+' · '+source,date:new Date().toISOString()};
+  $('resWpm').textContent=st.wpm; $('resAcc').textContent=st.acc+'%'; $('resRaw').textContent=st.raw; $('resCons').textContent=consistency+'%';
+  $('resChars').textContent=st.correct+'/'+st.errors; $('resTime').textContent=Math.round(el)+'s';
+  $('resVerdict').textContent= st.wpm>=80?'Blazing fast — elite territory! 🚀':st.wpm>=55?'Excellent — faster than most professionals.':st.wpm>=38?'Solid pace — right around the average typist. Keep pushing!':'Great start — accuracy first, speed will follow. 💪';
+  $('saveScoreBtn').disabled=false; $('saveScoreBtn').style.opacity='1';
+  recordActivity(1,Math.round(el));
+  $('resStreak').textContent='🔥'+computeStreak().current;
+  store.set('ft_keystats',keyStats); store.set('ft_pairs',pairStats);
+  const best=Math.max(store.get('ft_best',0),st.wpm); store.set('ft_best',best);
+  $('resultsPanel').classList.remove('hidden');
+  drawChart(); renderHeatmap(); renderStreak(); updateHeaderStats(); renderBadges();
+  $('liveStats').textContent='Test complete. '+st.wpm+' words per minute at '+st.acc+' percent accuracy.';
+  $('appStatus').textContent='Results ready.';
+  beep(880,2); if(navigator.vibrate) navigator.vibrate(60);
+  $('resultsPanel').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function drawChart(){
+  const c=$('wpmChart'),ctx=c.getContext('2d'),W=c.width,H=c.height; ctx.clearRect(0,0,W,H);
+  const data=samples.length>1?samples:[0,lastResult?lastResult.wpm:0];
+  const max=Math.max(...data,10)*1.15;
+  ctx.strokeStyle='rgba(128,128,128,.3)';ctx.lineWidth=1; for(let i=1;i<4;i++){ctx.beginPath();ctx.moveTo(8,H*i/4);ctx.lineTo(W-8,H*i/4);ctx.stroke();}
+  ctx.beginPath(); data.forEach((v,i)=>{const x=10+i*(W-20)/Math.max(data.length-1,1),y=H-12-(v/max)*(H-26); i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
+  ctx.strokeStyle='#ff0000';ctx.lineWidth=3;ctx.lineJoin='round';ctx.stroke();
+  data.forEach((v,i)=>{const x=10+i*(W-20)/Math.max(data.length-1,1),y=H-12-(v/max)*(H-26);ctx.beginPath();ctx.arc(x,y,3.2,0,7);ctx.fillStyle='#ff0000';ctx.fill();});
+  ctx.fillStyle='rgba(128,128,128,.9)';ctx.font='11px JetBrains Mono';ctx.fillText('WPM / SECOND',10,14);
+}
+function resetTestState(keepPrompt){
+  stopTimer(); finished=false; startTime=null; typedPrev=''; samples=[];
+  $('typerInput').value=''; $('resultsPanel').classList.add('hidden');
+  if(!keepPrompt) promptText=generatePrompt();
+  renderPrompt(); paintStats();
+  $('statTime').textContent=testMode==='time'?durationVal:0;
+  $('statTimeLabel').textContent=testMode==='time'?'SECONDS LEFT':'SECONDS';
+}
+function newTest(focus){ resetTestState(false); if(focus) focusTyper(); }
+function retrySame(){ resetTestState(true); }
+function renderDurationPills(){
+  const vals=testMode==='time'?[15,30,60,120]:[10,25,50,100];
+  if(!vals.includes(durationVal)) durationVal=testMode==='time'?30:25;
+  $('durationPills').innerHTML=vals.map(v=>'<button onclick="setDuration('+v+')" data-dur="'+v+'" class="dur-btn mono text-[10px] px-3 py-2 rounded-full border '+(v===durationVal?'pill-active':'')+'" style="border-color:var(--border)">'+v+(testMode==='time'?'s':'')+'</button>').join('');
+}
+function setTestMode(m){ testMode=m; document.querySelectorAll('.seg-btn').forEach(b=>b.classList.toggle('seg-active',b.dataset.testmode===m)); renderDurationPills(); newTest(false); }
+function setDuration(v){ durationVal=v; renderDurationPills(); newTest(true); }
+function setSource(s){ source=s; document.querySelectorAll('.src-btn').forEach(b=>b.classList.toggle('pill-active',b.dataset.source===s)); newTest(true); }
+function copyResult(){ if(!lastResult) return; copyText('⌨️ FlowType Pro — '+lastResult.wpm+' WPM • '+lastResult.acc+'% accuracy • '+lastResult.consistency+'% consistency ('+lastResult.mode+') 🔥 Streak: '+computeStreak().current+' days','Result copied — share it anywhere'); }
+document.addEventListener('keydown',e=>{
+  const modalOpen=!$('checkoutModal').classList.contains('hidden');
+  if((e.ctrlKey||e.metaKey)&&e.key==='Enter'&&!modalOpen){ e.preventDefault(); newTest(true); toast('New test — go!','shuffle'); }
+  if(e.key==='Escape'){ if(modalOpen) closeCheckout(); else if(document.activeElement===$('typerInput')) $('typerInput').blur(); }
+});
+
+// ============================== STREAK / ACTIVITY ==============================
+function getActivity(){ return store.get('ft_activity',{}); }
+function recordActivity(tests,seconds){
+  const a=getActivity(), k=todayKey(); if(!a[k]) a[k]={tests:0,seconds:0};
+  a[k].tests+=tests||0; a[k].seconds+=seconds||0; store.set('ft_activity',a);
+}
+function computeStreak(){
+  const a=getActivity(); let current=0; const d=new Date();
+  if(!a[todayKey(d)]) d.setDate(d.getDate()-1); // streak survives until today ends
+  while(a[todayKey(d)]){ current++; d.setDate(d.getDate()-1); }
+  // longest
+  const days=Object.keys(a).sort(); let longest=0,run=0,prev=null;
+  for(const k of days){ if(prev){ const diff=(new Date(k)-new Date(prev))/86400000; run=diff===1?run+1:1; } else run=1; longest=Math.max(longest,run); prev=k; }
+  return {current,longest:Math.max(longest,current)};
+}
+function renderStreak(){
+  const a=getActivity(), s=computeStreak();
+  $('headerStreak').textContent=s.current; $('streakDays').textContent=s.current; $('longestStreak').textContent=s.longest;
+  const today=a[todayKey()]||{tests:0,seconds:0};
+  $('streakToday').textContent=today.tests+' tests'; $('todayTests').textContent=today.tests;
+  $('activeDays').textContent=Object.keys(a).length;
+  const totalSec=Object.values(a).reduce((x,y)=>x+(y.seconds||0),0);
+  $('focusMins').textContent=Math.floor(totalSec/60)+'m';
+  $('totalTests').textContent=Object.values(a).reduce((x,y)=>x+(y.tests||0),0);
+  let html=''; const now=new Date();
+  for(let i=34;i>=0;i--){ const d=new Date(now); d.setDate(now.getDate()-i); const k=todayKey(d), v=a[k]; const lvl=!v?0: v.tests>=3||v.seconds>=600?3: v.tests>=1||v.seconds>=120?2:1;
+    const bg=lvl===0?'var(--surface2)':lvl===1?'color-mix(in srgb,var(--accent) 35%,transparent)':lvl===2?'color-mix(in srgb,var(--accent) 65%,transparent)':'var(--accent)';
+    html+='<div title="'+k+(v?(' • '+v.tests+' tests, '+Math.floor(v.seconds/60)+' min'):' • rest day')+'" class="aspect-square rounded-[5px] '+(i===0?'ring-2 ring-offset-1':'')+'" style="background:'+bg+(i===0?';--tw-ring-color:var(--accent);ring-color:var(--accent)':'')+'"></div>'; }
+  $('streakCalendar').innerHTML=html;
+}
+function renderBadges(){
+  const s=computeStreak(), a=getActivity(), total=Object.values(a).reduce((x,y)=>x+(y.tests||0),0), best=store.get('ft_best',0);
+  const badges=[['🚀 First Test',total>=1],['🔥 3-Day Streak',s.longest>=3],['📅 7-Day Streak',s.longest>=7],['🏆 30-Day Streak',s.longest>=30],['⚡ 40 WPM',best>=40],['💨 70 WPM',best>=70],['👑 100 WPM',best>=100],['🎯 25 Tests',total>=25],['📚 100 Tests',total>=100]];
+  $('badgeRow').innerHTML=badges.map(b=>'<span class="mono text-[9px] px-2.5 py-1.5 rounded-full border '+(b[1]?'accent-bg font-bold':'muted opacity-45')+'" style="border-color:var(--border)" title="'+(b[1]?'Unlocked':'Locked')+'">'+(b[1]?'':'🔒 ')+b[0]+'</span>').join('');
+}
+function markTodayDemo(){ recordActivity(0,60); renderStreak(); renderBadges(); toast('Today logged — streak protected 🔥','flame'); }
+function updateHeaderStats(){ $('bestWpm').textContent=store.get('ft_best',0); renderStreak(); }
+
+// ============================== HEATMAP ==============================
+const KB_ROWS=[['1','2','3','4','5','6','7','8','9','0'],['q','w','e','r','t','y','u','i','o','p'],['a','s','d','f','g','h','j','k','l',';'],['z','x','c','v','b','n','m',',','.','/']];
+const FINGERS={'L Pinky':'1qaz','L Ring':'2wsx','L Middle':'3edc','L Index':'45rtfgvb','R Index':'67yuhjnm','R Middle':'8ik,','R Ring':'9ol.','R Pinky':'0p;/','Thumb':' '};
+function heatColour(stats){
+  if(!stats||stats.h+stats.e<5) return 'background:var(--surface2);color:var(--muted)';
+  const rate=stats.e/(stats.h+stats.e), hue=140-rate*140;
+  return 'background:hsl('+hue+',72%,'+(rate>0.25?'42%':'34%')+');color:#fff;border-color:transparent';
+}
+function renderHeatmap(){
+  let html='';
+  KB_ROWS.forEach(row=>{ html+='<div class="flex gap-1.5">'+row.map(k=>{ const st=keyStats[k]; const att=st?st.h+st.e:0; const pct=att>=5?Math.round(st.e/att*100):null;
+    return '<div class="keycap" style="'+heatColour(st)+'" title="'+k.toUpperCase()+(att?(': '+Math.round((st.h/att)*100)+'% accurate ('+st.h+'/'+att+')'):' — no data yet')+'"><span class="text-[13px] sm:text-[15px] font-bold leading-none">'+k+'</span><span class="text-[7.5px] opacity-80 mt-0.5">'+(pct===null?(att?att+'×':'·'):pct+'% err')+'</span></div>'; }).join('')+'</div>'; });
+  const sp=keyStats['space'], spAtt=sp?sp.h+sp.e:0;
+  html+='<div class="flex gap-1.5 px-[18%]"><div class="keycap" style="'+heatColour(sp)+'" title="SPACE'+(spAtt?(': '+Math.round(sp.h/spAtt*100)+'% accurate'):'')+'"><span class="text-[10px] font-bold">SPACE</span><span class="text-[7.5px] opacity-80">'+(spAtt>=5?Math.round(sp.e/spAtt*100)+'% err':(spAtt?spAtt+'×':'·'))+'</span></div></div>';
+  $('heatmapKeyboard').innerHTML=html;
+  const entries=Object.entries(keyStats); const totH=entries.reduce((a,[,v])=>a+v.h,0), totE=entries.reduce((a,[,v])=>a+v.e,0);
+  if(totH+totE>0){ let weakest='—',wr=-1; entries.forEach(([k,v])=>{const a=v.h+v.e; if(a>=15){const r=v.e/a; if(r>wr){wr=r;weakest=k;}}});
+    $('heatSummary').textContent=(totH+totE).toLocaleString()+' keystrokes • '+Math.round(totH/(totH+totE)*100)+'% lifetime accuracy'+(wr>=0?(' • weakest: "'+weakest.toUpperCase()+'" ('+Math.round(wr*100)+'% err)'):''); }
+  // finger bars
+  $('fingerBars').innerHTML=Object.entries(FINGERS).map(([name,keys])=>{
+    let h=0,e=0; for(const ch of keys){ const st=keyStats[ch===' '?'space':ch]; if(st){h+=st.h;e+=st.e;} }
+    const att=h+e, acc=att?Math.round(h/att*100):null;
+    return '<div class="flex items-center gap-2 mono text-[10px]"><span class="w-[74px] muted shrink-0">'+name+'</span><span class="flex-1 h-2 rounded-full overflow-hidden" style="background:var(--border)"><span class="block h-full rounded-full" style="width:'+(acc||0)+'%;background:'+(acc===null?'transparent':acc>=92?'var(--good)':acc>=82?'#eab308':'var(--error)')+'"></span></span><span class="w-[52px] text-right">'+(acc===null?'—':acc+'%')+'</span></div>';
+  }).join('');
+  const pairs=Object.entries(pairStats).filter(([,v])=>v.h+v.e>=4).map(([k,v])=>({k,rate:v.e/(v.h+v.e),e:v.e,att:v.h+v.e})).sort((a,b)=>b.rate-a.rate||b.e-a.e).slice(0,10);
+  $('pairList').innerHTML=pairs.length?pairs.map(p=>'<span class="mono text-[10px] px-2.5 py-1.5 rounded-full border" style="border-color:var(--border);background:color-mix(in srgb,var(--error) '+(8+p.rate*30)+'%,transparent)" title="'+p.e+' errors in '+p.att+' attempts">“'+escapeHtml(p.k)+'” <b>'+Math.round(p.rate*100)+'% err</b></span>').join(''):'<p class="text-xs muted">Finish a few tests and your toughest letter pairs will appear here.</p>';
+}
+function resetHeatmap(){ if(!confirm('Clear all heatmap keystroke data?')) return; keyStats={}; pairStats={}; store.set('ft_keystats',{}); store.set('ft_pairs',{}); $('heatSummary').textContent='No keystrokes yet — finish a test.'; renderHeatmap(); toast('Heatmap data cleared','trash-2'); }
+
+// ============================== ANALOG CLOCK + FOCUS ==============================
+(function buildTicks(){ const g=$('clockTicks'),NS='http://www.w3.org/2000/svg'; for(let i=0;i<60;i++){ const l=document.createElementNS(NS,'line'); const major=i%5===0, a=i*6*Math.PI/180, r1=major?80:86, r2=92; l.setAttribute('x1',100+Math.sin(a)*r1); l.setAttribute('y1',100-Math.cos(a)*r1); l.setAttribute('x2',100+Math.sin(a)*r2); l.setAttribute('y2',100-Math.cos(a)*r2); l.setAttribute('stroke',major?'var(--text)':'var(--dim)'); l.setAttribute('stroke-width',major?3:1.2); l.setAttribute('stroke-linecap','round'); g.appendChild(l); } })();
+function updateClock(){ const d=new Date(),s=d.getSeconds()+d.getMilliseconds()/1000,m=d.getMinutes()+s/60,h=(d.getHours()%12)+m/60;
+  $('secHand').setAttribute('transform','rotate('+(s*6)+' 100 100)'); $('minHand').setAttribute('transform','rotate('+(m*6)+' 100 100)'); $('hourHand').setAttribute('transform','rotate('+(h*30)+' 100 100)');
+  $('digitalClock').textContent=d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  $('digitalDate').textContent=d.toLocaleDateString([],{weekday:'short',day:'numeric',month:'short',year:'numeric'}).toUpperCase(); }
+setInterval(updateClock,200); updateClock();
+let focus={total:1500,remain:1500,running:false,int:null,lastAnnounced:-1};
+function fmt(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+function setFocusPreset(min){ stopFocus(); focus.total=focus.remain=min*60; focus.lastAnnounced=-1; $('focusDisplay').textContent=fmt(focus.remain); $('focusBtn').innerHTML='<i data-lucide="play" class="w-3.5 h-3.5"></i> START FOCUS'; lucide.createIcons(); $('timerLive').textContent='Focus timer set to '+min+' minutes.'; }
+function stopFocus(){ clearInterval(focus.int); focus.int=null; focus.running=false; }
+function toggleFocus(){
+  if(focus.running){ stopFocus(); $('focusBtn').innerHTML='<i data-lucide="play" class="w-3.5 h-3.5"></i> RESUME'; $('timerLive').textContent='Focus paused. '+fmt(focus.remain)+' remaining.'; }
+  else{ focus.running=true; $('focusBtn').innerHTML='<i data-lucide="pause" class="w-3.5 h-3.5"></i> PAUSE'; $('timerLive').textContent='Focus started. '+fmt(focus.remain)+' remaining.';
+    focus.int=setInterval(()=>{ focus.remain--; $('focusDisplay').textContent=fmt(Math.max(focus.remain,0));
+      const minsLeft=Math.ceil(focus.remain/60); if(focus.remain%60===0&&minsLeft!==focus.lastAnnounced&&focus.remain>0){ focus.lastAnnounced=minsLeft; $('timerLive').textContent=minsLeft+' minutes remaining.'; }
+      if(focus.remain<=0){ stopFocus(); recordActivity(0,focus.total); renderStreak(); renderBadges(); beep(1046,3); if(navigator.vibrate)navigator.vibrate([180,80,180]); toast('Focus complete — streak updated 🔥','timer'); $('timerLive').textContent='Focus session complete.'; $('focusBtn').innerHTML='<i data-lucide="play" class="w-3.5 h-3.5"></i> START FOCUS'; focus.remain=focus.total; $('focusDisplay').textContent=fmt(focus.remain); lucide.createIcons(); }
+    },1000); }
+  lucide.createIcons();
+}
+function resetFocus(){ setFocusPreset(Math.round(focus.total/60)); }
+
+// ============================== RAIN NOISE (WEB AUDIO) ==============================
+let actx=null,noise=null,currentNoise='rain',analyserNode=null,rainRaf=null,masterGain=null;
+const NOISE_CFG={rain:{lp:520,hpGain:.06,label:'Rain'},storm:{lp:320,hpGain:.1,label:'Storm'},white:{lp:7500,hpGain:0,label:'White noise'},cafe:{lp:420,hpGain:.015,label:'Café (brown noise)'}};
+function makeBuffer(brown){
+  const len=actx.sampleRate*3, buf=actx.createBuffer(1,len,actx.sampleRate), d=buf.getChannelData(0); let last=0;
+  for(let i=0;i<len;i++){ const w=Math.random()*2-1; if(brown){ last=(last+0.02*w)/1.02; d[i]=last*3.2; } else d[i]=w; }
+  if(!brown){ // crossfade ends for a seamless loop
+    const fade=Math.floor(actx.sampleRate*0.4); for(let i=0;i<fade;i++){ const t=i/fade; d[i]=d[i]*t+d[len-fade+i]*(1-t); } }
+  return buf;
+}
+function setNoise(t){ currentNoise=t; document.querySelectorAll('.noise-btn').forEach(b=>b.classList.toggle('pill-active',b.dataset.noise===t)); if(noise){ stopNoise(); startNoise(); } }
+function startNoise(){
+  if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)();
+  actx.resume();
+  const cfg=NOISE_CFG[currentNoise], buf=makeBuffer(currentNoise==='cafe');
+  masterGain=actx.createGain(); masterGain.gain.value=$('rainVol').value/100*0.5;
+  analyserNode=actx.createAnalyser(); analyserNode.fftSize=128;
+  masterGain.connect(analyserNode); analyserNode.connect(actx.destination);
+  const src=actx.createBufferSource(); src.buffer=buf; src.loop=true;
+  const lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=cfg.lp;
+  src.connect(lp); lp.connect(masterGain); src.start();
+  const nodes=[src];
+  if(cfg.hpGain>0){ const s2=actx.createBufferSource(); s2.buffer=buf; s2.loop=true; s2.playbackRate.value=0.72;
+    const hp=actx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=1300;
+    const g2=actx.createGain(); g2.gain.value=cfg.hpGain;
+    const lfo=actx.createOscillator(); lfo.frequency.value=currentNoise==='storm'?0.09:0.23; const lg=actx.createGain(); lg.gain.value=cfg.hpGain*0.55; lfo.connect(lg); lg.connect(g2.gain); lfo.start();
+    s2.connect(hp); hp.connect(g2); g2.connect(masterGain); s2.start(); nodes.push(s2,lfo); }
+  if(currentNoise==='storm'){ const lfo=actx.createOscillator(); lfo.frequency.value=0.06; const lg=actx.createGain(); lg.gain.value=130; lfo.connect(lg); lg.connect(lp.frequency); lfo.start(); nodes.push(lfo); }
+  noise={nodes};
+  $('rainToggle').innerHTML='<i data-lucide="pause" class="w-4 h-4"></i> STOP '+cfg.label.toUpperCase(); lucide.createIcons();
+  $('rainStatus').textContent='▶ Playing '+cfg.label+' — synthesised live, 0 audio files downloaded.';
+  drawRainBars();
+}
+function stopNoise(){ if(!noise) return; noise.nodes.forEach(n=>{try{n.stop()}catch(e){} try{n.disconnect()}catch(e){}}); noise=null; cancelAnimationFrame(rainRaf);
+  $('rainToggle').innerHTML='<i data-lucide="play" class="w-4 h-4"></i> PLAY '+NOISE_CFG[currentNoise].label.toUpperCase(); lucide.createIcons(); $('rainStatus').textContent='Paused. Generated live with filtered noise buffers — works offline, no MP3.'; drawIdleRain(); }
+function toggleNoise(){ noise?stopNoise():startNoise(); }
+$('rainVol').addEventListener('input',e=>{ $('rainVolLabel').textContent=e.target.value+'%'; if(masterGain&&actx) masterGain.gain.setTargetAtTime(e.target.value/100*0.5,actx.currentTime,0.05); });
+function drawRainBars(){ const c=$('rainCanvas'),ctx=c.getContext('2d'); const data=new Uint8Array(analyserNode.frequencyBinCount);
+  const tick=()=>{ if(!noise) return; analyserNode.getByteFrequencyData(data); ctx.clearRect(0,0,c.width,c.height);
+    const n=42,bw=c.width/n; for(let i=0;i<n;i++){ const v=data[Math.floor(i*data.length/n)]/255,h=6+v*(c.height-14); ctx.fillStyle=i%7===0?'#ff0000':'rgba(160,160,160,.85)'; const x=i*bw+bw*0.22,w=bw*0.56; ctx.beginPath(); ctx.roundRect(x,(c.height-h)/2,w,h,w/2); ctx.fill(); }
+    rainRaf=requestAnimationFrame(tick); }; tick(); }
+function drawIdleRain(){ const c=$('rainCanvas'),ctx=c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height); const n=42,bw=c.width/n; for(let i=0;i<n;i++){ const h=5+Math.abs(Math.sin(i*0.55))*13; ctx.fillStyle='rgba(130,130,130,.35)'; ctx.beginPath(); ctx.roundRect(i*bw+bw*0.22,(c.height-h)/2,bw*0.56,h,4); ctx.fill(); } }
+drawIdleRain();
+
+// ============================== CALCULATOR ==============================
+let calcExpr='';
+const CALC_BTNS=[['C','clear','accent'],['⌫','back',''],['%','%','op'],['÷','/','op'],['7','7',''],['8','8',''],['9','9',''],['×','*','op'],['4','4',''],['5','5',''],['6','6',''],['−','-','op'],['1','1',''],['2','2',''],['3','3',''],['+','+','op'],['0','0','span2'],['.','.',''],['=','=','eq']];
+$('calcGrid').innerHTML=CALC_BTNS.map(b=>'<button type="button" class="calc-btn '+(b[2]==='span2'?'col-span-2':'')+'" style="'+(b[2]==='eq'?'background:var(--accent);color:#fff;border-color:var(--accent)':b[2]==='accent'?'color:var(--error)':b[2]==='op'?'color:var(--accent)':'')+'" onclick="calcPress(\''+b[1]+'\')" aria-label="'+escapeHtml(b[0]==='⌫'?'Backspace':b[0])+'">'+b[0]+'</button>').join('');
+function calcShow(){ $('calcDisplay').textContent=calcExpr||'0'; }
+function calcPress(t){
+  if(t==='clear'){ calcExpr=''; $('calcExpr').innerHTML='&nbsp;'; }
+  else if(t==='back'){ calcExpr=calcExpr.slice(0,-1); }
+  else if(t==='='){ calcEquals(); return; }
+  else if(calcExpr.length<28) calcExpr+=t;
+  calcShow();
+}
+function calcEquals(){
+  if(!calcExpr) return;
+  if(!/^[0-9+\-*/.()% ]+$/.test(calcExpr)){ $('calcDisplay').textContent='Error'; return; }
+  try{ const v=Function('"use strict"; return ('+calcExpr.replace(/%/g,'/100')+')')();
+    if(typeof v!=='number'||!isFinite(v)) throw 0;
+    $('calcExpr').textContent=calcExpr+' ='; calcExpr=String(Math.round(v*1e10)/1e10); calcShow();
+  }catch(e){ $('calcDisplay').textContent='Error'; $('calcExpr').textContent=calcExpr; calcExpr=''; }
+}
+$('calc').addEventListener('focus',()=>{ $('calcKbdStatus').textContent='⌨ KEYS ARMED'; $('calcKbdStatus').style.background='var(--accent)'; $('calcKbdStatus').style.color='#fff'; });
+$('calc').addEventListener('blur',()=>{ $('calcKbdStatus').textContent='⌨ CLICK TO ARM KEYS'; $('calcKbdStatus').style.background=''; $('calcKbdStatus').style.color=''; });
+$('calc').addEventListener('keydown',e=>{
+  if(/^[0-9.]$/.test(e.key)){ calcPress(e.key); e.preventDefault(); }
+  else if(['+','-','*','/','%','(',')'].includes(e.key)){ calcPress(e.key); e.preventDefault(); }
+  else if(e.key==='Enter'||e.key==='='){ calcPress('='); e.preventDefault(); }
+  else if(e.key==='Backspace'){ calcPress('back'); e.preventDefault(); }
+  else if(e.key==='Escape'){ calcPress('clear'); e.preventDefault(); }
+});
+
+// ============================== LEADERBOARD ==============================
+let lbMode='local';
+const GLOBAL_SEED=[{name:'sora_types 🇯🇵',wpm:171,acc:99},{name:'KeyQueen 🇺🇸',wpm:158,acc:98},{name:'Aarav F. 🇮🇳',wpm:149,acc:97},{name:'marta.k 🇵🇱',wpm:141,acc:98},{name:'Nocturne 🇰🇷',wpm:136,acc:96},{name:'Diego R. 🇧🇷',wpm:129,acc:97},{name:'emma.exe 🇬🇧',wpm:121,acc:95},{name:'Raj Speed 🇮🇳',wpm:115,acc:94},{name:'Lena W. 🇩🇪',wpm:108,acc:97},{name:'pixelpace 🇨🇦',wpm:101,acc:93},{name:'Omar S. 🇪🇬',wpm:94,acc:95},{name:'studywithmei 🇲🇾',wpm:87,acc:96}];
+function localScores(){ return store.get('ft_scores',[]); }
+function saveCurrentScore(){
+  if(!lastResult||scoreSaved) return;
+  const name=($('playerName').value.trim()||'You').slice(0,24); store.set('ft_name',name);
+  const arr=localScores(); arr.push({name,wpm:lastResult.wpm,acc:lastResult.acc,mode:lastResult.mode,date:lastResult.date});
+  arr.sort((a,b)=>b.wpm-a.wpm); store.set('ft_scores',arr.slice(0,30)); scoreSaved=true;
+  $('saveScoreBtn').disabled=true; $('saveScoreBtn').style.opacity='.5';
+  toast('Saved! You are #'+(arr.findIndex(s=>s.date===lastResult.date&&s.wpm===lastResult.wpm)+1)+' locally 🏆','trophy');
+  renderLeaderboard();
+}
+function setLeaderboard(m){ lbMode=m; $('lbLocalBtn').classList.toggle('tab-active',m==='local'); $('lbGlobalBtn').classList.toggle('tab-active',m==='global'); $('lbLocalBtn').setAttribute('aria-selected',m==='local'); $('lbGlobalBtn').setAttribute('aria-selected',m==='global'); renderLeaderboard(); }
+function renderLeaderboard(){
+  let rows=[], myName=store.get('ft_name','You');
+  if(lbMode==='local'){ rows=localScores().slice(0,10).map(s=>({...s,mine:s.name===myName})); }
+  else { rows=GLOBAL_SEED.map(s=>({...s,mode:'verified · 60s',date:null})); const best=localScores()[0]; if(best) rows.push({...best,name:best.name+' (you)',mine:true}); rows.sort((a,b)=>b.wpm-a.wpm); rows=rows.slice(0,12); }
+  if(!rows.length){ $('leaderboardList').innerHTML='<div class="text-center py-10 muted"><p class="font-dot text-xl">NO SCORES YET</p><p class="text-xs mt-1.5">Finish a test above and tap “Save to Leaderboard”.</p></div>'; return; }
+  const medals=['🥇','🥈','🥉'];
+  $('leaderboardList').innerHTML=rows.map((r,i)=>'<div class="flex items-center gap-3 rounded-2xl px-4 py-3 border '+(r.mine?'accent-bg':'surface2')+'" style="border-color:var(--border)"><span class="font-dot text-lg w-[52px] shrink-0">'+(medals[i]||('#'+(i+1)))+'</span><span class="font-bold text-sm truncate flex-1">'+escapeHtml(r.name)+(lbMode==='global'&&!r.mine?' <span class="mono text-[8px] opacity-60">✓ VERIFIED</span>':'')+'</span><span class="mono text-[9px] '+(r.mine?'text-white/70':'muted')+' hidden md:block w-[150px] truncate">'+escapeHtml(r.mode||'')+'</span><span class="mono text-[10px] '+(r.mine?'':'muted')+' w-[58px] text-right">'+r.acc+'% acc</span><span class="font-dot text-[22px] w-[92px] text-right">'+r.wpm+' <span class="text-[10px] opacity-60">WPM</span></span></div>').join('');
+}
+function syncGlobal(){
+  setLeaderboard('global'); $('syncIcon').style.animation='spin 0.8s linear infinite';
+  $('syncStatus').innerHTML='<span class="w-2 h-2 rounded-full bg-blue-400 rec"></span> SYNCING (DEMO)…';
+  setTimeout(()=>{ $('syncIcon').style.animation=''; const cfg=store.get('ft_backend',null);
+    $('syncStatus').innerHTML=cfg&&cfg.url?'<span class="w-2 h-2 rounded-full bg-green-400"></span> BACKEND CONFIG SAVED • DEMO DATA SHOWN':'<span class="w-2 h-2 rounded-full bg-yellow-400"></span> DEMO SYNC • ADD BACKEND KEYS BELOW';
+    renderLeaderboard(); toast('Global board refreshed (demo data)','globe'); },850);
+}
+function saveBackendConfig(){ const url=$('sbUrl').value.trim(),key=$('sbKey').value.trim(); store.set('ft_backend',{url,key: key?'••••'+key.slice(-4):''}); $('sbStatus').textContent=url?('Saved ✓ '+url+' — ship a build that POSTs scores to /rest/v1/scores to go live.'):'Enter a project URL first.'; toast(url?'Backend config saved locally':'Add a Supabase URL first','database',!url); }
+
+// ============================== LICENSE + CHECKOUT ==============================
+const LC='ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+function makeLicense(){ let chars=''; for(let i=0;i<11;i++) chars+=LC[Math.floor(Math.random()*LC.length)]; let sum=0; for(const c of chars) sum+=LC.indexOf(c); chars+=LC[sum%LC.length]; return 'FTPRO-'+chars.slice(0,4)+'-'+chars.slice(4,8)+'-'+chars.slice(8,12); }
+function validLicense(k){ k=(k||'').trim().toUpperCase(); if(!/^FTPRO(-[A-Z0-9]{4}){3}$/.test(k)) return false; const chars=k.replace(/FTPRO-|-/g,''); if(chars.length!==12) return false; let sum=0; for(let i=0;i<11;i++){ const ix=LC.indexOf(chars[i]); if(ix<0) return false; sum+=ix; } return LC[sum%LC.length]===chars[11]; }
+function activateLicense(key,plan){ const lic={key:key.toUpperCase(),plan:plan||'pro',at:new Date().toISOString()}; store.set('ft_license',lic); paintLicense(); }
+function paintLicense(){ const lic=store.get('ft_license',null); const active=!!(lic&&validLicense(lic.key));
+  $('proPill').classList.toggle('hidden',!active); $('proPill').classList.toggle('flex',active);
+  $('licenseBanner').classList.toggle('hidden',!active); $('licenseBanner').classList.toggle('flex',active);
+  if(active) $('licenseBannerText').textContent='PRO ACTIVE — '+(lic.plan==='lifetime'?'Lifetime 👑':'Pro Monthly')+' • Key '+lic.key.slice(0,10)+'•••• • since '+new Date(lic.at).toLocaleDateString(); }
+function activateFromInput(){ const k=$('licenseInput').value.trim().toUpperCase(); if(validLicense(k)){ activateLicense(k,'pro'); toast('Pro activated — welcome aboard! 👑','badge-check'); } else toast('That key does not validate (checksum failed)','key-round',1); }
+function revokeLicense(){ localStorage.removeItem('ft_license'); paintLicense(); toast('License deactivated on this device','key-round'); }
+let provider='razorpay', checkoutPlan='pro', lastFocused=null;
+const PLANS={pro:{label:'Pro Monthly — ₹199/mo',amount:'₹199'},lifetime:{label:'Lifetime — one-time ₹1,499 👑',amount:'₹1,499'}};
+function setProvider(p){ provider=p; document.querySelectorAll('.prov-btn').forEach(b=>b.classList.toggle('tab-active',b.dataset.provider===p)); }
+function fillTestPayment(){ $('payName').value=$('payName').value||'Test User'; $('payEmail').value=$('payEmail').value||'test@example.com'; $('payDetail').value=provider==='razorpay'?'success@razorpay':'4242 4242 4242 4242'; toast('Test details filled','credit-card'); }
+function openCheckout(plan){
+  checkoutPlan=plan; lastFocused=document.activeElement;
+  $('checkoutProvider').textContent=provider==='razorpay'?'RAZORPAY SECURE CHECKOUT (DEMO)':'STRIPE CHECKOUT (DEMO)';
+  $('checkoutPlan').textContent=PLANS[plan].label; $('checkoutAmount').textContent=PLANS[plan].amount;
+  $('payDetailLabel').textContent=provider==='razorpay'?'UPI ID':'CARD NUMBER (TEST: 4242…)';
+  $('payDetail').placeholder=provider==='razorpay'?'yourname@okhdfcbank':'4242 4242 4242 4242';
+  $('checkoutForm').classList.remove('hidden'); $('webhookLog').classList.add('hidden'); $('webhookLog').textContent=''; $('checkoutSuccess').classList.add('hidden');
+  $('payBtn').disabled=false; $('payBtn').innerHTML='<i data-lucide="lock" class="w-4 h-4"></i> PAY '+PLANS[plan].amount+' SECURELY';
+  $('checkoutModal').classList.remove('hidden'); $('checkoutModal').classList.add('flex'); document.body.style.overflow='hidden'; lucide.createIcons();
+  setTimeout(()=>$('payName').focus(),60);
+}
+function closeCheckout(){ $('checkoutModal').classList.add('hidden'); $('checkoutModal').classList.remove('flex'); document.body.style.overflow=''; if(lastFocused&&lastFocused.focus) lastFocused.focus(); }
+$('checkoutModal').addEventListener('click',e=>{ if(e.target===$('checkoutModal')) closeCheckout(); });
+$('checkoutModal').addEventListener('keydown',e=>{ // simple focus trap
+  if(e.key!=='Tab') return; const f=[...$('checkoutModal').querySelectorAll('button:not([disabled]),input')].filter(el=>el.offsetParent!==null); if(!f.length) return;
+  const first=f[0],last=f[f.length-1]; if(e.shiftKey&&document.activeElement===first){ last.focus(); e.preventDefault(); } else if(!e.shiftKey&&document.activeElement===last){ first.focus(); e.preventDefault(); }
+});
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+async function payNow(){
+  const email=$('payEmail').value.trim(), detail=$('payDetail').value.trim();
+  if(!$('payName').value.trim()){ toast('Add your name','user',1); $('payName').focus(); return; }
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ toast('Enter a valid email for the license','mail',1); $('payEmail').focus(); return; }
+  if(provider==='razorpay'&&!detail.includes('@')){ toast('Enter a UPI ID like name@okbank (or fill test details)','credit-card',1); return; }
+  if(provider==='stripe'&&detail.replace(/\D/g,'').length<12){ toast('Enter the test card 4242 4242 4242 4242','credit-card',1); return; }
+  $('payBtn').disabled=true; $('payBtn').innerHTML='<i data-lucide="loader-circle" class="w-4 h-4 animate-spin"></i> PROCESSING…'; lucide.createIcons();
+  const log=$('webhookLog'); log.classList.remove('hidden'); log.textContent='';
+  const ts=()=>new Date().toLocaleTimeString();
+  const steps=provider==='razorpay'
+    ?['POST /v1/orders → order_'+Math.random().toString(36).slice(2,10)+' created ('+PLANS[checkoutPlan].amount+')','Customer approved UPI collect request…','event: payment.authorized ✓','event: payment.captured ✓','→ Webhook received at /webhooks/razorpay','→ HMAC-SHA256 signature verified ✓ (demo)','→ License generated + emailed to '+email]
+    :['POST /v1/checkout/sessions → cs_test_'+Math.random().toString(36).slice(2,10),'Customer completed Stripe Checkout (test card)…','event: payment_intent.succeeded ✓','event: checkout.session.completed ✓','→ Webhook received at /webhooks/stripe','→ Stripe-Signature verified ✓ (demo)','→ License generated + emailed to '+email];
+  for(const s of steps){ log.textContent+='['+ts()+'] '+s+'\n'; log.scrollTop=log.scrollHeight; await wait(560); }
+  const key=makeLicense(); activateLicense(key,checkoutPlan);
+  $('issuedKey').textContent=key; $('checkoutForm').classList.add('hidden'); $('checkoutSuccess').classList.remove('hidden'); lucide.createIcons();
+  beep(1046,3); toast('Payment captured → license auto-issued 👑','badge-check');
+}
+
+// ============================== PWA (ALL CLIENT-SIDE) ==============================
+let deferredInstall=null;
+window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); deferredInstall=e; $('installBtn').classList.remove('hidden'); });
+$('installBtn').addEventListener('click',async()=>{ if(deferredInstall){ deferredInstall.prompt(); await deferredInstall.userChoice; deferredInstall=null; $('installBtn').classList.add('hidden'); } });
+(function generatePWA(){
+  try{
+    const c=document.createElement('canvas'); c.width=c.height=512; const x=c.getContext('2d');
+    x.fillStyle='#050505'; x.beginPath(); x.roundRect(0,0,512,512,96); x.fill();
+    x.fillStyle='#ff0000'; x.beginPath(); x.arc(400,112,44,0,7); x.fill();
+    x.fillStyle='#fff'; x.font='800 300px Arial'; x.textAlign='center'; x.textBaseline='middle'; x.fillText('F',256,272);
+    const icon=c.toDataURL('image/png');
+    const touch=document.createElement('link'); touch.rel='apple-touch-icon'; touch.href=icon; document.head.appendChild(touch);
+    const manifest={name:'FlowType Pro',short_name:'FlowType',description:'Typing trainer with heatmap, streaks and focus tools.',start_url:'.',scope:'.',display:'standalone',background_color:'#050505',theme_color:'#050505',icons:[{src:icon,sizes:'512x512',type:'image/png',purpose:'any maskable'},{src:icon,sizes:'192x192',type:'image/png'}]};
+    const link=document.createElement('link'); link.rel='manifest'; link.href=URL.createObjectURL(new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'})); document.head.appendChild(link);
+    $('pwaStatus').textContent='Clock, rain (Web Audio), app icon & PWA manifest are all generated on-device at runtime ✓ Manifest injected locally — host this file over HTTPS for full installability.';
+  }catch(e){ $('pwaStatus').textContent='PWA manifest generation unavailable in this browser — everything else still works offline-first in localStorage.'; }
+})();
+
+// ============================== INIT ==============================
+(function init(){
+  $('playerName').value=store.get('ft_name','');
+  const cfg=store.get('ft_backend',null); if(cfg&&cfg.url) $('sbUrl').value=cfg.url;
+  renderDurationPills(); resetTestState(false);
+  renderHeatmap(); renderStreak(); renderBadges(); renderLeaderboard(); paintLicense(); updateHeaderStats();
+  lucide.createIcons();
+})();
+</script>
+</body>
+</html>
